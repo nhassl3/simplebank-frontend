@@ -11,7 +11,7 @@ import {
     UpdateUserFullNameRequest,
     ListAccountsRequest, LoginUserRequest, LoggedUser, TransferTxResponse,
 } from '../types';
-import {cookieService} from "../../utils/cookies.ts";
+import { cookieService } from '../../utils/cookies.ts';
 
 const API_BASE_URL = '/api/v1';
 const API_BASE_AUTH_URL = '/api/auth'
@@ -19,9 +19,24 @@ const API_BASE_AUTH_URL = '/api/auth'
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-      'Authorization': `Bearer ${cookieService.getAccessToken()}`,
-      'Content-Type': 'application/json',
+    'Content-Type': 'application/json',
   },
+});
+
+// Подставляем актуальный access token из cookies перед каждым запросом.
+// Это решает проблему, когда в axios \"залипает\" старый (например, админский) токен,
+// даже после выхода из аккаунта и повторного входа обычным пользователем.
+api.interceptors.request.use((config) => {
+  const token = cookieService.getAccessToken();
+
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers['Authorization'] = `Bearer ${token}`;
+  } else if (config.headers && 'Authorization' in config.headers) {
+    delete (config.headers as any)['Authorization'];
+  }
+
+  return config;
 });
 
 const auth_api = axios.create({
