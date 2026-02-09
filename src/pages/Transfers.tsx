@@ -20,7 +20,7 @@ function Transfers() {
     try {
       const newTransfer = await transferApi.create(transferForm);
       setTransfer(newTransfer);
-      setSuccess(`Transfer ${newTransfer.id} created successfully!`);
+      setSuccess(`Transfer ${newTransfer.transfer.id} created successfully!`);
       setTransferForm({
         from_account_id: 0,
         to_account_id: 0,
@@ -38,8 +38,8 @@ function Transfers() {
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Money Transfers</h1>
 
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+        <div className="mb-4 bg-red-50 text-center border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error.toUpperCase()}
         </div>
       )}
 

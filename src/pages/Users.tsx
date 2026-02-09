@@ -1,21 +1,15 @@
-import { useState } from 'react';
+import React, {useState} from 'react';
 import { userApi } from '../api/client';
-import type { CreateUserRequest, UpdateUserPasswordRequest, UpdateUserFullNameRequest } from '../types';
+import type { UpdateUserPasswordRequest, UpdateUserFullNameRequest } from '../types';
+import {cookieService} from "../../utils/cookies.ts";
+import {NavLink} from "react-router-dom";
 
 function Users() {
-  const [activeTab, setActiveTab] = useState<'create' | 'view' | 'update'>('create');
+  const [activeTab, setActiveTab] = useState<'view' | 'update'>('view');
   const [username, setUsername] = useState('');
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  // Create user form
-  const [createForm, setCreateForm] = useState<CreateUserRequest>({
-    username: '',
-    password: '',
-    full_name: '',
-    email: '',
-  });
 
   // Update password form
   const [updatePasswordForm, setUpdatePasswordForm] = useState<UpdateUserPasswordRequest>({
@@ -28,19 +22,6 @@ function Users() {
     username: '',
     full_name: '',
   });
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    try {
-      const newUser = await userApi.create(createForm);
-      setSuccess(`User ${newUser.username} created successfully!`);
-      setCreateForm({ username: '', password: '', full_name: '', email: '' });
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to create user');
-    }
-  };
 
   const handleGetUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,9 +83,15 @@ function Users() {
     <div className="px-4 py-6 sm:px-0">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">User Management</h1>
 
+      {cookieService.getUsername() == '' &&  (
+          <div className="flex">
+                Go to <NavLink to="/auth/login">log in</NavLink>
+          </div>
+      )}
+
       {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+        <div className="mb-4 bg-red-50 border text-center border-red-200 text-red-700 px-4 py-3 rounded">
+          {error.toUpperCase()}
         </div>
       )}
 
@@ -117,16 +104,6 @@ function Users() {
       <div className="mb-6">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab('create')}
-              className={`${
-                activeTab === 'create'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-            >
-              Create User
-            </button>
             <button
               onClick={() => setActiveTab('view')}
               className={`${
@@ -150,60 +127,6 @@ function Users() {
           </nav>
         </div>
       </div>
-
-      {activeTab === 'create' && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Create New User</h2>
-          <form onSubmit={handleCreateUser} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Username</label>
-              <input
-                type="text"
-                required
-                value={createForm.username}
-                onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Password (12-38 chars, alphanumeric)</label>
-              <input
-                type="password"
-                required
-                value={createForm.password}
-                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Full Name</label>
-              <input
-                type="text"
-                required
-                value={createForm.full_name}
-                onChange={(e) => setCreateForm({ ...createForm, full_name: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                required
-                value={createForm.email}
-                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Create User
-            </button>
-          </form>
-        </div>
-      )}
 
       {activeTab === 'view' && (
         <div className="space-y-6">

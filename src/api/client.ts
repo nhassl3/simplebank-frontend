@@ -1,34 +1,51 @@
 import axios from 'axios';
-import type {
-  User,
-  Account,
-  Transfer,
-  CreateUserRequest,
-  CreateAccountRequest,
-  TransferRequest,
-  UpdateAccountRequest,
-  AddAccountBalanceRequest,
-  UpdateUserPasswordRequest,
-  UpdateUserFullNameRequest,
-  ListAccountsRequest,
+import {
+    User,
+    Account,
+    CreateUserRequest,
+    CreateAccountRequest,
+    TransferRequest,
+    UpdateAccountRequest,
+    AddAccountBalanceRequest,
+    UpdateUserPasswordRequest,
+    UpdateUserFullNameRequest,
+    ListAccountsRequest, LoginUserRequest, LoggedUser, TransferTxResponse,
 } from '../types';
+import {cookieService} from "../../utils/cookies.ts";
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = '/api/v1';
+const API_BASE_AUTH_URL = '/api/auth'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+      'Authorization': `Bearer ${cookieService.getAccessToken()}`,
+      'Content-Type': 'application/json',
   },
 });
 
+const auth_api = axios.create({
+    baseURL: API_BASE_AUTH_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// Auth endpoints
+export const authApi = {
+    create: async (data: CreateUserRequest): Promise<LoggedUser> => {
+        const response = await auth_api.post<LoggedUser>('/signup', data);
+        return response.data;
+    },
+
+    login: async (data: LoginUserRequest): Promise<LoggedUser> => {
+        const response = await auth_api.post<LoggedUser>('/login', data)
+        return response.data;
+    }
+}
+
 // User endpoints
 export const userApi = {
-  create: async (data: CreateUserRequest): Promise<User> => {
-    const response = await api.post<User>('/users/', data);
-    return response.data;
-  },
-
   get: async (username: string): Promise<User> => {
     const response = await api.get<User>(`/users/${username}`);
     return response.data;
@@ -83,11 +100,8 @@ export const accountApi = {
 
 // Transfer endpoints
 export const transferApi = {
-  create: async (data: TransferRequest): Promise<Transfer> => {
-    const response = await api.post<Transfer>('/transfers/', data);
+  create: async (data: TransferRequest): Promise<TransferTxResponse> => {
+    const response = await api.post<TransferTxResponse>('/transfers/', data);
     return response.data;
   },
 };
-
-export default api;
-

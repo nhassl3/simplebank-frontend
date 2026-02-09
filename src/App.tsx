@@ -3,8 +3,14 @@ import Users from './pages/Users';
 import Accounts from './pages/Accounts';
 import Transfers from './pages/Transfers';
 import Home from './pages/Home';
+import AuthLogin from './pages/auth/Login';
+import AuthSignup from './pages/auth/Signup';
+import {useState} from "react";
+import {cookieService} from "../utils/cookies.ts";
 
 function App() {
+    const [username, setUsername] = useState<string | null>(cookieService.getUsername() ?? "");
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
@@ -66,6 +72,53 @@ function App() {
                   </NavLink>
                 </div>
               </div>
+                <div className="flex">
+                    {username == "" && (
+                        <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <NavLink
+                                to="/auth/login"
+                                className={({ isActive }) =>
+                                    `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                                        isActive
+                                            ? 'border-blue-500 text-gray-900'
+                                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                    }`
+                                }
+                            >
+                                Login
+                            </NavLink>
+                            <NavLink
+                                to="/auth/signup"
+                                className={({ isActive }) =>
+                                    `inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                                        isActive
+                                            ? 'border-blue-500 text-gray-900'
+                                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                    }`
+                                }
+                            >
+                                Sign up
+                            </NavLink>
+                        </div>
+                     )
+                    }
+                    {
+                        username != "" && (
+                            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                                <NavLink
+                                    to="/"
+                                    onClick={() => {
+                                        cookieService.clearKeys();
+                                        setUsername("");
+                                    }}
+                                    className="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                                >
+                                    Logout ( {username} )
+                                </NavLink>
+                            </div>
+                        )
+                    }
+                </div>
             </div>
           </div>
         </nav>
@@ -76,6 +129,8 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/accounts" element={<Accounts />} />
             <Route path="/transfers" element={<Transfers />} />
+            <Route path="/auth/login" element={<AuthLogin />} />
+            <Route path="/auth/signup" element={<AuthSignup />} />
           </Routes>
         </main>
       </div>
